@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation to deploy microservicess
+
+Parameters:
+  EnvironmentName:
+    Description: The environment the template is being run in. Used for naming resources
+    Type: String
+    AllowedValues:
+      - nonprod
+      - preprod
+      - prod
+    Default: nonprod
+  SourceBucketName:
+    Description: S3 bucket for file upload
+    Type: String
+    Default: mytetsourcebk234
+  DestinationBucketName:
+    Description: S3 bucket for resized images
+    Type: String
+    Default: mydestbukd4567
+
+
+
+Resources:
+# Source S3 bucket for file upload logs
+  SourceBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: SNSTopicPolicy
+    Properties:
+      BucketName: !Ref SourceBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Topic: !Ref SNSTopic
+            Event: 's3:ObjectCreated:Put'
+
+# Destination S3 bucket for file upload logs
+  DestinationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DestinationBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+
+# SNS Topic triggered by S3 Notification
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: microservice-topic
+      Subscription:
+      - Endpoint: oliver.edwards@nordcloud.com
+        Protocol: email
+      - Endpoint: !GetAtt ResizeQueue1.Arn
+        Protocol: "sqs"
+      - Endpoint: !GetAtt ResizeQueue2.Arn
+        Protocol: "sqs"
+      - Endpoint: !GetAtt ResizeQueue3.Arn
+        Protocol: "sqs"
+  SNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: 
+        - !Ref SNSTopic
+      PolicyDocument:
+        Id: MyTopicPolicy
+        Version: '2012-10-17'
+        Statement:
+          - Sid: S3Access
+            Effect: Allow
+            Principal: s3.amazonaws.com
+            Action:
+              - SNS:Publish
+            Resource: arn:aws:s3:::mytetsourcebk234
+
+# SQS Queues
+  ResizeQueue1: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-1 
+  
+  ResizeQueue2: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-2
+
+  ResizeQueue3: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-3 
