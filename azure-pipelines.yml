@@ -11,15 +11,15 @@ pool:
 
 steps:
   # - script: ./buildSomething.sh #Python environment??
-  # - task: CopyFiles@2
-  #   inputs:
-  #     contents: 'lambda_function/**'
-  #     targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: CopyFiles@2
+    inputs:
+      contents: 'lambda_function/**'
+      targetFolder: $(Build.ArtifactStagingDirectory)
 
-  # - task: PublishBuildArtifacts@1
-  #   inputs:
-  #     pathToPublish: $(Build.ArtifactStagingDirectory)
-  #     artifactName: lambda_function
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: lambda_function
 
   - task: CloudFormationCreateOrUpdateStack@1
     inputs:
