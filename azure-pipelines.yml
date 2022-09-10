@@ -34,19 +34,6 @@ stages:
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/lambda_function.zip'
               replaceExistingArchive: true
-
-          # - task: PublishBuildArtifacts@1
-          #   inputs:
-          #     PathtoPublish: '$(System.ArtifactsDirectory)'
-          #     ArtifactName: 'drop'
-          #     publishLocation: 'Container'
-
-          # - task: DownloadBuildArtifacts@0
-          #   inputs:
-          #     buildType: 'current'
-          #     downloadType: 'single'
-          #     artifactName: 'drop'
-          #     downloadPath: '$(System.ArtifactsDirectory)'
               
           - task: S3Upload@1
             inputs:
