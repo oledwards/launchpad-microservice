@@ -42,14 +42,21 @@ stages:
               stackName: 's3-lambdapackages'
               templateSource: 'file'
               templateFile: 's3.yml'  
+
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.ArtifactsDirectory)'
               
           - task: S3Upload@1
             inputs:
               awsCredentials: 'AWS-S3-Connection'
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
-              sourceFolder: $(Build.ArtifactStagingDirectory)
-              globExpressions: '$(Build.ArtifactStagingDirectory)/drop/lambda_function.zip'
+              sourceFolder: $(System.ArtifactsDirectory)
+              globExpressions: '$(System.ArtifactsDirectory)/*zip'
 
 - stage: Deploy
   jobs:
