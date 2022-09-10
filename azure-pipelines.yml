@@ -33,7 +33,8 @@ steps:
     inputs:
       awsCredentials: 'AWS-S3-Connection'
       regionName: 'eu-central-1'
-      bucketName: lambda-launchpad-packages22
+      bucketName: 'lambda-launchpad-packages22'
+      sourceFolder: '$(Build.ArtifactStagingDirectory)'
       globExpressions: 'lambda_function'
       
   - task: CloudFormationCreateOrUpdateStack@1
