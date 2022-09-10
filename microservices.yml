@@ -1,0 +1,282 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation to deploy microservicess
+
+Parameters:
+  EnvironmentName:
+    Description: The environment the template is being run in. Used for naming resources
+    Type: String
+    AllowedValues:
+      - nonprod
+      - preprod
+      - prod
+    Default: nonprod
+  SourceBucketName:
+    Description: S3 bucket for file upload
+    Type: String
+    Default: mysourcebuck234
+  DestinationBucketName:
+    Description: S3 bucket for resized images
+    Type: String
+    Default: mydestbuck4567
+
+
+
+Resources:
+# Source S3 bucket for file upload logs
+  SourceBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: SNSTopicPolicy
+    Properties:
+      BucketName: !Ref SourceBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Topic: !Ref SNSTopic
+            Event: 's3:ObjectCreated:Put'
+
+# Destination S3 bucket for file upload logs
+  DestinationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DestinationBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+
+# SNS Topic triggered by S3 Notification
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: microservice-topic
+      Subscription:
+      - Endpoint: oliver.edwards@nordcloud.com
+        Protocol: email
+      - Endpoint: !GetAtt ResizeQueue1.Arn
+        Protocol: "sqs"
+      - Endpoint: !GetAtt ResizeQueue2.Arn
+        Protocol: "sqs"
+      - Endpoint: !GetAtt ResizeQueue3.Arn
+        Protocol: "sqs"
+  SNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: 
+        - !Ref SNSTopic
+      PolicyDocument:
+        Statement:
+          - Sid: AllowS3
+            Effect: Allow
+            Principal:
+              Service:
+                - s3.amazonaws.com
+            Action: 'sns:Publish'
+            Resource:
+              - !Ref SNSTopic
+# SQS Queues
+  ResizeQueue1: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-1 
+  
+  ResizeQueue2: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-2
+
+  ResizeQueue3: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-3 
+
+# SQS Queue Policies
+  SQSPolicy1: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref ResizeQueue1
+      PolicyDocument: 
+        Statement: 
+          - Effect: "Allow"
+            Action: 
+              - "SQS:*" 
+            Resource: !GetAtt ResizeQueue1.Arn
+            Principal:  
+              AWS: 
+                - !Sub ${AWS::AccountId}
+          - Effect: "Allow"
+            Action: 
+              - "SQS:SendMessage" 
+            Resource: !GetAtt ResizeQueue1.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref SNSTopic
+            Principal:  
+              AWS: "*"
+
+  SQSPolicy2: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref ResizeQueue2
+      PolicyDocument: 
+        Statement: 
+          - Effect: "Allow"
+            Action: 
+              - "SQS:*" 
+            Resource: !GetAtt ResizeQueue2.Arn
+            Principal:  
+              AWS: 
+                - !Sub ${AWS::AccountId}
+          - Effect: "Allow"
+            Action: 
+              - "SQS:SendMessage" 
+            Resource: !GetAtt ResizeQueue2.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref SNSTopic
+            Principal:  
+              AWS: "*"
+  
+  SQSPolicy3: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref ResizeQueue3
+      PolicyDocument: 
+        Statement: 
+          - Effect: "Allow"
+            Action: 
+              - "SQS:*" 
+            Resource: !GetAtt ResizeQueue3.Arn
+            Principal:  
+              AWS: 
+                - !Sub ${AWS::AccountId}
+          - Effect: "Allow"
+            Action: 
+              - "SQS:SendMessage" 
+            Resource: !GetAtt ResizeQueue3.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref SNSTopic
+            Principal:  
+              AWS: "*"
+            
+
+# IAM role for Lambda
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3-get-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 's3:GetObject'
+                Resource: !GetAtt SourceBucket.Arn
+        - PolicyName: S3-put-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 's3:PutObject'
+                Resource: !GetAtt DestinationBucket.Arn
+        - PolicyName: SQS-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'sqs:ReceiveMessage'
+                  - 'sqs:DeleteMessage'
+                  - 'sqs:GetQueueAttributes'
+                Resource: 
+                  - !GetAtt ResizeQueue1.Arn
+                  - !GetAtt ResizeQueue2.Arn
+                  - !GetAtt ResizeQueue3.Arn
+
+# Lambda Functions
+  Function1:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: photo-resize-1
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: launchpad-source2
+        S3Key: lambda_function.zip
+      Runtime: python3.9
+      Timeout: 20
+
+  Function2:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: photo-resize-2
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: launchpad-source2
+        S3Key: lambda_function.zip
+      Runtime: python3.9
+      Timeout: 20
+
+  Function3:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: photo-resize-3
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: launchpad-source2
+        S3Key: lambda_function.zip
+      Runtime: python3.9
+      Timeout: 20
+
+
+# Event Source Mappings
+  EventSourceMapping1:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt ResizeQueue1.Arn
+      FunctionName: !GetAtt Function1.Arn
+  
+  EventSourceMapping2:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt ResizeQueue2.Arn
+      FunctionName: !GetAtt Function2.Arn
+
+  EventSourceMapping3:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt ResizeQueue3.Arn
+      FunctionName: !GetAtt Function3.Arn

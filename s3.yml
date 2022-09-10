@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation to deploy s3 bucket for Lambda packages
+
+Parameters:
+  EnvironmentName:
+    Description: The environment the template is being run in. Used for naming resources
+    Type: String
+    AllowedValues:
+      - nonprod
+      - preprod
+      - prod
+    Default: nonprod
+  BucketName:
+    Description: Name of bucket to store Lambda packages
+    Type: String
+    Default: lambda-launchpad-packages22
+
+
+Resources:
+# S3 bucket for Lambda packages
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+# SSM Parameter to use in microservice template
+  S3Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /s3/bucketname
+      Type: String
+      Value: !Ref S3Bucket
+      Description: S3 bucket where Lambda packages are stored
+      Tags:
+        Environment: !Sub ${EnvironmentName}
