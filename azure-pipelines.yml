@@ -18,7 +18,7 @@ steps:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      PathtoPublish: /
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
       ArtifactName: 'lambda_function'
 
   - task: CloudFormationCreateOrUpdateStack@1
@@ -34,7 +34,7 @@ steps:
       awsCredentials: 'AWS-S3-Connection'
       regionName: 'eu-central-1'
       bucketName: 'lambda-launchpad-packages22'
-      sourceFolder: /
+      sourceFolder: $(Build.ArtifactStagingDirectory)
       globExpressions: 'lambda_function'
       
   - task: CloudFormationCreateOrUpdateStack@1
