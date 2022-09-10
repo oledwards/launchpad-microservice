@@ -18,8 +18,9 @@ steps:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)
-      ArtifactName: 'lambda_function'
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
 
   - task: CloudFormationCreateOrUpdateStack@1
     inputs:
@@ -28,6 +29,13 @@ steps:
       stackName: 's3-lambdapackages'
       templateSource: 'file'
       templateFile: 's3.yml'  
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(System.ArtifactsDirectory)'
       
   - task: S3Upload@1
     inputs:
@@ -35,7 +43,7 @@ steps:
       regionName: 'eu-central-1'
       bucketName: 'lambda-launchpad-packages22'
       sourceFolder: $(Build.ArtifactStagingDirectory)
-      globExpressions: 'lambda_function'
+      globExpressions: '$(Build.ArtifactStagingDirectory)/drop/lambda_function.zip'
       
   - task: CloudFormationCreateOrUpdateStack@1
     inputs:
