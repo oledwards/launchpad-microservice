@@ -15,10 +15,19 @@ stages:
       - job:
         steps:
           # - script: ./buildSomething.sh #Python environment??
+
           - task: CopyFiles@2
             inputs:
               contents: 'lambda_function/**'
-              targetFolder: $(Build.ArtifactStagingDirectory)
+              targetFolder: $(Build.BinariesDirectory)
+
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: '$(Build.BinariesDirectory)'
+              includeRootFolder: true
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/lambda_function.zip'
+              replaceExistingArchive: true
 
           - task: PublishBuildArtifacts@1
             inputs:
@@ -33,13 +42,6 @@ stages:
               stackName: 's3-lambdapackages'
               templateSource: 'file'
               templateFile: 's3.yml'  
-
-          - task: DownloadBuildArtifacts@0
-            inputs:
-              buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'drop'
-              downloadPath: '$(System.ArtifactsDirectory)'
               
           - task: S3Upload@1
             inputs:
@@ -47,7 +49,7 @@ stages:
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
               sourceFolder: $(Build.ArtifactStagingDirectory)
-              globExpressions: '$(Build.ArtifactStagingDirectory)/drop/lambda_function/lambda_function.zip'
+              globExpressions: '$(Build.ArtifactStagingDirectory)/drop/lambda_function.zip'
 
 - stage: Deploy
   jobs:
