@@ -18,6 +18,10 @@ Parameters:
     Description: S3 bucket for resized images
     Type: String
     Default: mydestbuck4567
+  LambdaS3Bucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /s3/bucketname
+    Description: S3 Bucket Name where Lambda Packages are stored
 
 
 
@@ -64,8 +68,6 @@ Resources:
     Properties:
       TopicName: microservice-topic
       Subscription:
-      - Endpoint: oliver.edwards@nordcloud.com
-        Protocol: email
       - Endpoint: !GetAtt ResizeQueue1.Arn
         Protocol: "sqs"
       - Endpoint: !GetAtt ResizeQueue2.Arn
@@ -232,7 +234,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt LambdaRole.Arn
       Code:
-        S3Bucket: launchpad-source2
+        S3Bucket: !Ref LambdaS3Bucket
         S3Key: lambda_function.zip
       Runtime: python3.9
       Timeout: 20
@@ -244,7 +246,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt LambdaRole.Arn
       Code:
-        S3Bucket: launchpad-source2
+        S3Bucket: !Ref LambdaS3Bucket
         S3Key: lambda_function.zip
       Runtime: python3.9
       Timeout: 20
@@ -256,7 +258,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt LambdaRole.Arn
       Code:
-        S3Bucket: launchpad-source2
+        S3Bucket: !Ref LambdaS3Bucket
         S3Key: lambda_function.zip
       Runtime: python3.9
       Timeout: 20
