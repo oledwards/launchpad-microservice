@@ -32,7 +32,7 @@ stages:
               rootFolderOrFile: '$(Build.BinariesDirectory)'
               includeRootFolder: true
               archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/lambda_function.zip'
+              archiveFile: '$(System.ArtifactStagingDirectory)/lambda_function.zip'
               replaceExistingArchive: true
               
           - task: S3Upload@1
