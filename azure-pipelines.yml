@@ -66,6 +66,6 @@ stages:
           inputs:
             awsCredentials: 'AWS-S3-Connection'
             regionName: 'eu-central-1'
-            stackName: 'microservice'
+            stackName: 'microservices'
             templateSource: 'file'
-            templateFile: 'microservice.yml'
+            templateFile: 'microservices.yml'
