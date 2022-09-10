@@ -35,7 +35,7 @@ steps:
       regionName: 'eu-central-1'
       bucketName: 'lambda-launchpad-packages22'
       sourceFolder: '$(Build.ArtifactStagingDirectory)'
-      globExpressions: 'lambda_function'
+      globExpressions: 'lambda_function/lambda_function.py'
       
   - task: CloudFormationCreateOrUpdateStack@1
     inputs:
