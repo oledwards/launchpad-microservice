@@ -18,8 +18,9 @@ steps:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: lambda_function
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'lambda_function'
+      publishLocation: 'Container'
 
   - task: CloudFormationCreateOrUpdateStack@1
     inputs:
@@ -35,7 +36,7 @@ steps:
       regionName: 'eu-central-1'
       bucketName: 'lambda-launchpad-packages22'
       sourceFolder: '$(Build.ArtifactStagingDirectory)'
-      globExpressions: 'lambda_function/lambda_function.py'
+      globExpressions: 'lambda_function'
       
   - task: CloudFormationCreateOrUpdateStack@1
     inputs:
