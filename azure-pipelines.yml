@@ -47,7 +47,7 @@ stages:
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
               sourceFolder: $(Build.ArtifactStagingDirectory)
-              globExpressions: '$(Build.ArtifactStagingDirectory)/drop/lambda_function.py'
+              globExpressions: '$(Build.ArtifactStagingDirectory)/drop/lambda_function'
 
 - stage: Deploy
   jobs:
