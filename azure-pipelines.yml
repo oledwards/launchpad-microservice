@@ -14,7 +14,13 @@ stages:
   jobs:
       - job:
         steps:
-          # - script: ./buildSomething.sh #Python environment??
+          - task: CloudFormationCreateOrUpdateStack@1
+            inputs:
+              awsCredentials: 'AWS-S3-Connection'
+              regionName: 'eu-central-1'
+              stackName: 's3-lambdapackages'
+              templateSource: 'file'
+              templateFile: 's3.yml'  
 
           - task: CopyFiles@2
             inputs:
@@ -29,26 +35,18 @@ stages:
               archiveFile: '$(Build.ArtifactStagingDirectory)/lambda_function.zip'
               replaceExistingArchive: true
 
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              ArtifactName: 'drop'
-              publishLocation: 'Container'
+          # - task: PublishBuildArtifacts@1
+          #   inputs:
+          #     PathtoPublish: '$(System.ArtifactsDirectory)'
+          #     ArtifactName: 'drop'
+          #     publishLocation: 'Container'
 
-          - task: CloudFormationCreateOrUpdateStack@1
-            inputs:
-              awsCredentials: 'AWS-S3-Connection'
-              regionName: 'eu-central-1'
-              stackName: 's3-lambdapackages'
-              templateSource: 'file'
-              templateFile: 's3.yml'  
-
-          - task: DownloadBuildArtifacts@0
-            inputs:
-              buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'drop'
-              downloadPath: '$(System.ArtifactsDirectory)'
+          # - task: DownloadBuildArtifacts@0
+          #   inputs:
+          #     buildType: 'current'
+          #     downloadType: 'single'
+          #     artifactName: 'drop'
+          #     downloadPath: '$(System.ArtifactsDirectory)'
               
           - task: S3Upload@1
             inputs:
@@ -69,3 +67,33 @@ stages:
             stackName: 'microservices'
             templateSource: 'file'
             templateFile: 'microservices.yml'
+
+        - task: LambdaDeployFunction@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            deploymentMode: 'codeonly'
+            functionName: 'photo-resize-1'
+            codeLocation: 's3object'
+            s3Bucket: 'lambda-launchpad-packages22'
+            s3ObjectKey: 'lambda_function.zip'
+          
+        - task: LambdaDeployFunction@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            deploymentMode: 'codeonly'
+            functionName: 'photo-resize-2'
+            codeLocation: 's3object'
+            s3Bucket: 'lambda-launchpad-packages22'
+            s3ObjectKey: 'lambda_function.zip'
+          
+        - task: LambdaDeployFunction@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            deploymentMode: 'codeonly'
+            functionName: 'photo-resize-3'
+            codeLocation: 's3object'
+            s3Bucket: 'lambda-launchpad-packages22'
+            s3ObjectKey: 'lambda_function.zip'
