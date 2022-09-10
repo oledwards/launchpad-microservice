@@ -8,8 +8,6 @@ s3 = boto3.client('s3')
 DEST_BUCKET = os.environ['DEST_BUCKET']
 SIZE = 128, 128
 
-# Example of CICD!
-
 def lambda_handler(event, context):
 
     for record in event['Records']:
