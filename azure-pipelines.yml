@@ -9,38 +9,63 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-  # - script: ./buildSomething.sh #Python environment??
-  - task: CopyFiles@2
-    inputs:
-      contents: 'lambda_function/**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
+stages:
+- stage: Build
+  jobs:
+      - job:
+        steps:
+          # - script: ./buildSomething.sh #Python environment??
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)
-      ArtifactName: 'lambda_function'
+          - task: CopyFiles@2
+            inputs:
+              contents: 'lambda_function/**'
+              targetFolder: $(Build.BinariesDirectory)
 
-  - task: CloudFormationCreateOrUpdateStack@1
-    inputs:
-      awsCredentials: 'AWS-S3-Connection'
-      regionName: 'eu-central-1'
-      stackName: 's3-lambdapackages'
-      templateSource: 'file'
-      templateFile: 's3.yml'  
-      
-  - task: S3Upload@1
-    inputs:
-      awsCredentials: 'AWS-S3-Connection'
-      regionName: 'eu-central-1'
-      bucketName: 'lambda-launchpad-packages22'
-      sourceFolder: $(Build.ArtifactStagingDirectory)
-      globExpressions: 'lambda_function'
-      
-  - task: CloudFormationCreateOrUpdateStack@1
-    inputs:
-      awsCredentials: 'AWS-S3-Connection'
-      regionName: 'eu-central-1'
-      stackName: 'microservice'
-      templateSource: 'file'
-      templateFile: 'microservice.yml'
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: '$(Build.BinariesDirectory)'
+              includeRootFolder: true
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/lambda_function.zip'
+              replaceExistingArchive: true
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+
+          - task: CloudFormationCreateOrUpdateStack@1
+            inputs:
+              awsCredentials: 'AWS-S3-Connection'
+              regionName: 'eu-central-1'
+              stackName: 's3-lambdapackages'
+              templateSource: 'file'
+              templateFile: 's3.yml'  
+
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.ArtifactsDirectory)'
+              
+          - task: S3Upload@1
+            inputs:
+              awsCredentials: 'AWS-S3-Connection'
+              regionName: 'eu-central-1'
+              bucketName: 'lambda-launchpad-packages22'
+              sourceFolder: $(System.ArtifactsDirectory)
+              globExpressions: '$(System.ArtifactsDirectory)/*zip'
+
+- stage: Deploy
+  jobs:
+      - job:
+        steps:
+        - task: CloudFormationCreateOrUpdateStack@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            stackName: 'microservices'
+            templateSource: 'file'
+            templateFile: 'microservices.yml'
