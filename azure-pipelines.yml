@@ -10,6 +10,32 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+  # - script: ./buildSomething.sh #Python environment??
+  # - task: CopyFiles@2
+  #   inputs:
+  #     contents: 'lambda_function/**'
+  #     targetFolder: $(Build.ArtifactStagingDirectory)
+
+  # - task: PublishBuildArtifacts@1
+  #   inputs:
+  #     pathToPublish: $(Build.ArtifactStagingDirectory)
+  #     artifactName: lambda_function
+
+  - task: CloudFormationCreateOrUpdateStack@1
+    inputs:
+      awsCredentials: 'AWS-S3-Connection'
+      regionName: 'eu-central-1'
+      stackName: 's3-lambdapackages'
+      templateSource: 'file'
+      templateFile: 's3.yml'  
+      
+  - task: S3Upload@1
+    inputs:
+      awsCredentials: 'AWS-S3-Connection'
+      regionName: 'eu-central-1'
+      bucketName: lambda-launchpad-packages22
+      globExpressions: 'lambda_function'
+      
   - task: CloudFormationCreateOrUpdateStack@1
     inputs:
       awsCredentials: 'AWS-S3-Connection'
