@@ -26,24 +26,24 @@ stages:
   jobs:
       - job:
         steps:
-          - task: CopyFiles@2
-            inputs:
-              contents: 'lambdas/CreateMobileImage/*'
-              targetFolder: $(Build.BinariesDirectory)/CreateMobileImage/
+          # - task: CopyFiles@2
+          #   inputs:
+          #     contents: 'lambdas/CreateMobileImage/*'
+          #     targetFolder: $(Build.BinariesDirectory)/CreateMobileImage/
           
-          - task: CopyFiles@2
-            inputs:
-              contents: 'lambdas/CreateThumbnail/*'
-              targetFolder: $(Build.BinariesDirectory)/CreateThumbnail/
+          # - task: CopyFiles@2
+          #   inputs:
+          #     contents: 'lambdas/CreateThumbnail/*'
+          #     targetFolder: $(Build.BinariesDirectory)/CreateThumbnail/
           
-          - task: CopyFiles@2
-            inputs:
-              contents: 'lambdas/CreateWebImage/*'
-              targetFolder: $(Build.BinariesDirectory)/CreateWebImage/
+          # - task: CopyFiles@2
+          #   inputs:
+          #     contents: 'lambdas/CreateWebImage/*'
+          #     targetFolder: $(Build.BinariesDirectory)/CreateWebImage/
         
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: $(Build.BinariesDirectory)/CreateMobileImage/
+              rootFolderOrFile: 'lambdas/CreateMobileImage/'
               includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateMobileImage.zip'
@@ -51,7 +51,7 @@ stages:
             
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: $(Build.BinariesDirectory)/CreateThumbnail/
+              rootFolderOrFile: lambdas/CreateThumbnail/
               includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateThumbnail.zip'
@@ -59,7 +59,7 @@ stages:
 
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: $(Build.BinariesDirectory)/CreateWebImage/
+              rootFolderOrFile: lambdas/CreateWebImage/
               includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateWebImage.zip'
