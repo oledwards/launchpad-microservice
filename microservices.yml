@@ -22,7 +22,7 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /s3/bucketname
     Description: S3 Bucket Name where Lambda Packages are stored
-  VPCEndpoint:
+  VpcEndpointId:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /vpce/apigw
     Description: VPC Endpoint for API Gateway
@@ -55,7 +55,7 @@ Resources:
               "Resource": "execute-api:/*",
               "Condition": {
                 "StringNotEquals": {
-                  "aws:sourceVpce": !Ref VPCEndpoint
+                  "aws:sourceVpce": !Ref VpcEndpointId
                 }
               }
             }]
