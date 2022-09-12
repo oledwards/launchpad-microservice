@@ -28,16 +28,8 @@ stages:
         steps:
           - task: CopyFiles@2
             inputs:
-              contents: 'lambda_function/**'
-              targetFolder: $(Build.BinariesDirectory)
-
-          - task: ArchiveFiles@2
-            inputs:
-              rootFolderOrFile: '$(Build.BinariesDirectory)'
-              includeRootFolder: true
-              archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/lambda_function.zip'
-              replaceExistingArchive: true
+              contents: 'lambdas/**'
+              targetFolder: $(Build.ArtifactStagingDirectory)
               
           - task: S3Upload@1
             inputs:
