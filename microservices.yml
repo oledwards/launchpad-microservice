@@ -22,10 +22,61 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /s3/bucketname
     Description: S3 Bucket Name where Lambda Packages are stored
+  VPCEndpoint:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /vpce/apigw
+    Description: VPC Endpoint for API Gateway
 
 
 
 Resources:
+
+# API Gateway
+  RestApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Description: A test API
+      Name: !Sub "api-${EnvironmentName}"
+      EndpointConfiguration:
+        Types: 
+          - PRIVATE
+        VpcEndpointIds:
+          - !Ref VpcEndpointId
+      Policy: [{
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "execute-api:Invoke",
+              "Resource": "execute-api:/*"
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "execute-api:Invoke",
+              "Resource": "execute-api:/*",
+              "Condition": {
+                "StringNotEquals": {
+                  "aws:sourceVpce": !Ref VPCEndpoint
+                }
+              }
+            }]
+        
+  APIDomainName:
+    Type: 'AWS::ApiGateway::DomainName'
+    DependsOn: RestApi
+    Properties:
+      DomainName: ENTER DOMAIN NAME
+      RegionalCertificateArn: ENTER CERT
+      EndpointConfiguration:
+        Types: 
+          - REGIONAL
+  ApiMapping:
+    Type: 'AWS::ApiGateway::BasePathMapping'
+    DependsOn: APIDomainName
+    Properties:
+      DomainName: ENTER DOMAIN NAME
+      RestApiId: !Ref RestApi
+      Stage: !Ref EnvironmentName
+
 # Source S3 bucket for file upload logs
   SourceBucket:
     Type: AWS::S3::Bucket
@@ -227,7 +278,7 @@ Resources:
                   - !GetAtt ResizeQueue3.Arn
 
 # Lambda Functions
-  Function1:
+  CreateMobileImageFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: photo-resize-1
@@ -235,11 +286,11 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Code:
         S3Bucket: !Ref LambdaS3Bucket
-        S3Key: lambda_function.zip
+        S3Key: CreateMobileImage.zip
       Runtime: python3.9
       Timeout: 20
 
-  Function2:
+  CreateThumbnailFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: photo-resize-2
@@ -247,11 +298,11 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Code:
         S3Bucket: !Ref LambdaS3Bucket
-        S3Key: lambda_function.zip
+        S3Key: CreateThumbnail.zip
       Runtime: python3.9
       Timeout: 20
 
-  Function3:
+  CreateWebImageFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: photo-resize-3
@@ -259,7 +310,7 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Code:
         S3Bucket: !Ref LambdaS3Bucket
-        S3Key: lambda_function.zip
+        S3Key: CreateWebImage.zip
       Runtime: python3.9
       Timeout: 20
 
@@ -269,16 +320,16 @@ Resources:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       EventSourceArn: !GetAtt ResizeQueue1.Arn
-      FunctionName: !GetAtt Function1.Arn
+      FunctionName: !GetAtt CreateMobileImageFunction.Arn
   
   EventSourceMapping2:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       EventSourceArn: !GetAtt ResizeQueue2.Arn
-      FunctionName: !GetAtt Function2.Arn
+      FunctionName: !GetAtt CreateThumbnailFunction.Arn
 
   EventSourceMapping3:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       EventSourceArn: !GetAtt ResizeQueue3.Arn
-      FunctionName: !GetAtt Function3.Arn
+      FunctionName: !GetAtt CreateWebImageFunction.Arn
