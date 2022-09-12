@@ -46,7 +46,7 @@ stages:
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
               sourceFolder: lambdas
-              globExpressions: 'CreateWebImage.zip'
+              globExpressions: '*.zip'
 
 - stage: Deploy
   jobs:
