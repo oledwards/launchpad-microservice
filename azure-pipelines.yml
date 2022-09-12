@@ -70,7 +70,7 @@ stages:
               awsCredentials: 'AWS-S3-Connection'
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
-              sourceFolder: $(Build.BinariesDirectory)/CreateMobileImage/
+              sourceFolder: $(Build.ArtifactStagingDirectory)/CreateMobileImage/
               globExpressions: '*.zip'
           
           - task: S3Upload@1
@@ -78,7 +78,7 @@ stages:
               awsCredentials: 'AWS-S3-Connection'
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
-              sourceFolder: $(Build.BinariesDirectory)/CreateThumbnail/
+              sourceFolder: $(Build.ArtifactStagingDirectory)/CreateThumbnail/
               globExpressions: '*.zip'
           
           - task: S3Upload@1
@@ -106,27 +106,27 @@ stages:
             awsCredentials: 'AWS-S3-Connection'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'photo-resize-1'
+            functionName: 'CreateMobileImage'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages22'
-            s3ObjectKey: 'lambda_function.zip'
+            s3ObjectKey: 'CreateMobileImage.zip'
           
         - task: LambdaDeployFunction@1
           inputs:
             awsCredentials: 'AWS-S3-Connection'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'photo-resize-2'
+            functionName: 'CreateThumbnail'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages22'
-            s3ObjectKey: 'lambda_function.zip'
+            s3ObjectKey: 'CreateThumbnail.zip'
           
         - task: LambdaDeployFunction@1
           inputs:
             awsCredentials: 'AWS-S3-Connection'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'photo-resize-3'
+            functionName: 'CreateWebImage'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages22'
-            s3ObjectKey: 'lambda_function.zip'
+            s3ObjectKey: 'CreateWebImage.zip'
