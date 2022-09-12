@@ -230,7 +230,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: CreateMobileImage
-      Handler: lambda_function.lambda_handler
+      Handler: CreateMobileImage.handler
       Role: !GetAtt LambdaRole.Arn
       Code:
         S3Bucket: !Ref LambdaS3Bucket
@@ -242,7 +242,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: CreateThumbnail
-      Handler: lambda_function.lambda_handler
+      Handler: CreateThumbnail.handler
       Role: !GetAtt LambdaRole.Arn
       Code:
         S3Bucket: !Ref LambdaS3Bucket
@@ -254,7 +254,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: CreateWebImage
-      Handler: lambda_function.lambda_handler
+      Handler: CreateWebImage.handler
       Role: !GetAtt LambdaRole.Arn
       Code:
         S3Bucket: !Ref LambdaS3Bucket
