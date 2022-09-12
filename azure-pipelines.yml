@@ -28,7 +28,7 @@ stages:
         steps:
           - task: CopyFiles@2
             inputs:
-              contents: 'lambdas/**'
+              contents: 'lambdas/*.zip'
               targetFolder: $(Build.ArtifactStagingDirectory)
               
           - task: S3Upload@1
@@ -37,7 +37,7 @@ stages:
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
               sourceFolder: $(Build.ArtifactStagingDirectory)
-              globExpressions: '$(Build.ArtifactStagingDirectory)/*zip'
+              globExpressions: '$(Build.ArtifactStagingDirectory)/*.zip'
 
 - stage: Deploy
   jobs:
