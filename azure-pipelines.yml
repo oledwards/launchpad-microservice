@@ -43,7 +43,7 @@ stages:
         
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: 'lambdas/CreateMobileImage/*'
+              rootFolderOrFile: 'lambdas/CreateMobileImage/'
               includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateMobileImage.zip'
