@@ -13,7 +13,7 @@ Parameters:
   BucketName:
     Description: Name of bucket to store Lambda packages
     Type: String
-    Default: lambda-launchpad-packages22
+    Default: lambda-launchpad-packages
 
 
 Resources:
