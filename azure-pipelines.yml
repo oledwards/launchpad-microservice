@@ -26,18 +26,27 @@ stages:
   jobs:
       - job:
         steps:
-          - task: CopyFiles@2
-            inputs:
-              contents: 'lambdas/**'
-              targetFolder: $(Build.ArtifactStagingDirectory)
-              
+          # - task: CopyFiles@2
+          #   inputs:
+          #     contents: 'lambda_function/**'
+          #     targetFolder: $(Build.BinariesDirectory)
+          
+
+          # - task: ArchiveFiles@2
+          #   inputs:
+          #     rootFolderOrFile: '$(Build.BinariesDirectory)'
+          #     includeRootFolder: true
+          #     archiveType: 'zip'
+          #     archiveFile: '$(Build.ArtifactStagingDirectory)/lambda_function.zip'
+          #     replaceExistingArchive: true
+
           - task: S3Upload@1
             inputs:
               awsCredentials: 'AWS-S3-Connection'
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
-              sourceFolder: $(Build.ArtifactStagingDirectory)
-              globExpressions: '$(Build.ArtifactStagingDirectory)/*zip'
+              sourceFolder: lambdas
+              globExpressions: '*.zip'
 
 - stage: Deploy
   jobs:
