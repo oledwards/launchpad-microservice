@@ -72,22 +72,6 @@ stages:
               bucketName: 'lambda-launchpad-packages22'
               sourceFolder: $(Build.ArtifactStagingDirectory)
               globExpressions: '*.zip'
-          
-          - task: S3Upload@1
-            inputs:
-              awsCredentials: 'AWS-S3-Connection'
-              regionName: 'eu-central-1'
-              bucketName: 'lambda-launchpad-packages22'
-              sourceFolder: $(Build.ArtifactStagingDirectory)/CreateThumbnail/
-              globExpressions: '*.zip'
-          
-          - task: S3Upload@1
-            inputs:
-              awsCredentials: 'AWS-S3-Connection'
-              regionName: 'eu-central-1'
-              bucketName: 'lambda-launchpad-packages22'
-              sourceFolder: $(Build.ArtifactStagingDirectory)/CreateWebImage/
-              globExpressions: '*.zip'
 
 - stage: Deploy
   jobs:
