@@ -229,7 +229,7 @@ Resources:
   CreateMobileImageFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: photo-resize-1
+      FunctionName: CreateMobileImage
       Handler: lambda_function.lambda_handler
       Role: !GetAtt LambdaRole.Arn
       Code:
@@ -241,7 +241,7 @@ Resources:
   CreateThumbnailFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: photo-resize-2
+      FunctionName: CreateThumbnail
       Handler: lambda_function.lambda_handler
       Role: !GetAtt LambdaRole.Arn
       Code:
@@ -253,7 +253,7 @@ Resources:
   CreateWebImageFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: photo-resize-3
+      FunctionName: CreateWebImage
       Handler: lambda_function.lambda_handler
       Role: !GetAtt LambdaRole.Arn
       Code:
