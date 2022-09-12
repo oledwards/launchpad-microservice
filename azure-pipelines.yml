@@ -46,7 +46,7 @@ stages:
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages22'
               sourceFolder: lambdas
-              globExpressions: '$(Build.ArtifactStagingDirectory)/*.zip'
+              globExpressions: 'lambdas/*.zip'
 
 - stage: Deploy
   jobs:
