@@ -22,60 +22,8 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /s3/bucketname
     Description: S3 Bucket Name where Lambda Packages are stored
-  VpcEndpointId:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /vpce/apigw
-    Description: VPC Endpoint for API Gateway
-
-
 
 Resources:
-
-# API Gateway
-  RestApi:
-    Type: 'AWS::ApiGateway::RestApi'
-    Properties:
-      Description: A test API
-      Name: !Sub "api-${EnvironmentName}"
-      EndpointConfiguration:
-        Types: 
-          - PRIVATE
-        VpcEndpointIds:
-          - !Ref VpcEndpointId
-      Policy: [{
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": "execute-api:Invoke",
-              "Resource": "execute-api:/*"
-            },
-            {
-              "Effect": "Deny",
-              "Principal": "*",
-              "Action": "execute-api:Invoke",
-              "Resource": "execute-api:/*",
-              "Condition": {
-                "StringNotEquals": {
-                  "aws:sourceVpce": !Ref VpcEndpointId
-                }
-              }
-            }]
-        
-  APIDomainName:
-    Type: 'AWS::ApiGateway::DomainName'
-    DependsOn: RestApi
-    Properties:
-      DomainName: ENTER DOMAIN NAME
-      RegionalCertificateArn: ENTER CERT
-      EndpointConfiguration:
-        Types: 
-          - REGIONAL
-  ApiMapping:
-    Type: 'AWS::ApiGateway::BasePathMapping'
-    DependsOn: APIDomainName
-    Properties:
-      DomainName: ENTER DOMAIN NAME
-      RestApiId: !Ref RestApi
-      Stage: !Ref EnvironmentName
 
 # Source S3 bucket for file upload logs
   SourceBucket:

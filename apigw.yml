@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation to deploy microservicess
+
+Parameters:
+  EnvironmentName:
+    Description: The environment the template is being run in. Used for naming resources
+    Type: String
+    AllowedValues:
+      - nonprod
+      - preprod
+      - prod
+    Default: nonprod
+  DomainName:
+    Description: Domain Name for API Gateway
+    Type: String
+    Default: practice.ga
+  CertArn:
+    Description: Cert for API Gateway Domain
+    Type: String
+    Default: arn:aws:acm:eu-central-1:890084460572:certificate/b02cf326-577d-43ca-a245-5781858adced
+  VpcEndpointId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /vpce/apigw
+    Description: VPC Endpoint for API Gateway
+
+
+
+Resources:
+
+# API Gateway
+  RestApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Description: An API to upload images to S3
+      Name: !Sub "api-${EnvironmentName}"
+      EndpointConfiguration:
+        Types: 
+          - PRIVATE
+        VpcEndpointIds:
+          - !Ref VpcEndpointId
+      Policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                  AWS: '*'
+              Action: execute-api:Invoke
+              Resource: 'execute-api:/*'
+            - Effect: Deny
+              Principal:
+                AWS: '*'
+              Action: execute-api:Invoke
+              Resource: 'execute-api:/*'
+              Condition:
+                StringNotEquals:
+                  aws:sourceVpce: !Ref VpcEndpointId
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref RestApi
+      DeploymentId: !Ref ApiDeployment
+      MethodSettings:
+        - DataTraceEnabled: true
+          HttpMethod: "*"
+          LoggingLevel: "INFO"
+          MetricsEnabled: true
+          ResourcePath: "/*"
+      StageName: !Ref EnvironmentName
+
+  ApiMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref RestApi
+      ResourceId: !GetAtt 
+        - RestApi
+        - RootResourceId
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        
+  APIDomainName:
+    Type: 'AWS::ApiGateway::DomainName'
+    DependsOn: RestApi
+    Properties:
+      DomainName: !Ref DomainName
+      RegionalCertificateArn: !Ref CertArn
+      EndpointConfiguration:
+        Types: 
+          - REGIONAL
+  ApiMapping:
+    Type: 'AWS::ApiGateway::BasePathMapping'
+    DependsOn: APIDomainName
+    Properties:
+      DomainName: !Ref DomainName
+      RestApiId: !Ref RestApi
+      Stage: !Ref EnvironmentName
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      Description: Initial Deployment
+      RestApiId: !Ref RestApi
+
+# CloudWatch Role and Config for API Gateway Logging
+  cwlogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "cwlogs-role-${AWS::StackName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Description: Common Role to use API Gateway to publish to CloudWatch Logs
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
+
+  APIGatewayLogging:
+    Type: AWS::ApiGateway::Account
+    DependsOn: cwlogsRole
+    Properties: 
+      CloudWatchRoleArn: 
+        Fn::GetAtt:
+          - cwlogsRole
+          - Arn
