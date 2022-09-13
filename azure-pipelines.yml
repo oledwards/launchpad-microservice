@@ -30,12 +30,17 @@ stages:
             inputs:
               versionSpec: '3.8'
           
-          - task: PythonScript@0
-            inputs:
-              scriptSource: 'inline'
-              script: |
-                print('Hello world 1')
-                print('Hello world 2')
+          - script: python -m pip install --upgrade pip setuptools wheel
+            displayName: 'Install tools'
+            
+          - script: pip install -r requirements.txt
+            displayName: 'Install requirements'
+          
+          - script: |
+              pip install pytest pytest-azurepipelines
+              pip install pytest-cov
+              pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
+            displayName: 'pytest'
           
           - task: ArchiveFiles@2
             inputs:
