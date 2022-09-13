@@ -20,7 +20,7 @@ stages:
               regionName: 'eu-central-1'
               stackName: 's3-lambdapackages'
               templateSource: 'file'
-              templateFile: 's3.yml'  
+              templateFile: 'cfn/s3.yml'
             
 - stage: Build
   jobs:
