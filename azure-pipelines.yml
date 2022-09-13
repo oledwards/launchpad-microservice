@@ -53,6 +53,7 @@ stages:
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateMobileImage.zip'
               replaceExistingArchive: true
+            displayName: 'Create Lambda Package - CreateMobileImage'
             
           - task: ArchiveFiles@2
             inputs:
@@ -61,6 +62,7 @@ stages:
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateThumbnail.zip'
               replaceExistingArchive: true
+            displayName: 'Create Lambda Package - CreateThumbnail'
 
           - task: ArchiveFiles@2
             inputs:
@@ -69,14 +71,16 @@ stages:
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateWebImage.zip'
               replaceExistingArchive: true
+            displayName: 'Create Lambda Package - CreateWebImage'
             
           - task: S3Upload@1
             inputs:
               awsCredentials: 'AWS-S3-Connection'
               regionName: 'eu-central-1'
-              bucketName: 'lambda-launchpad-packages22'
+              bucketName: 'lambda-launchpad-packages'
               sourceFolder: $(Build.ArtifactStagingDirectory)
               globExpressions: '*.zip'
+            displayName: 'Upload zip files to S3'
 
 - stage: Deploy
   jobs:
@@ -89,6 +93,7 @@ stages:
             stackName: 'microservices'
             templateSource: 'file'
             templateFile: 'cfn/microservices.yml'
+          displayName: 'Deploy Microservices'
 
         - task: LambdaDeployFunction@1
           inputs:
@@ -99,6 +104,7 @@ stages:
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages22'
             s3ObjectKey: 'CreateMobileImage.zip'
+          displayName: 'Deploy CreateMobileImage Lambda'
           
         - task: LambdaDeployFunction@1
           inputs:
@@ -109,6 +115,7 @@ stages:
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages22'
             s3ObjectKey: 'CreateThumbnail.zip'
+          displayName: 'Deploy CreateThumbnail Lambda'
           
         - task: LambdaDeployFunction@1
           inputs:
@@ -119,3 +126,4 @@ stages:
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages22'
             s3ObjectKey: 'CreateWebImage.zip'
+          displayName: 'Deploy CreateWebImage Lambda'
