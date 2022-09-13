@@ -39,7 +39,7 @@ stages:
           
           - script: |
               python -m pip install flake8
-              flake8 /CreateMobileImage/CreateMobileImage.py
+              flake8 CreateMobileImage/CreateMobileImage.py
             workingDirectory: lambdas
             displayName: 'pylint'
           
