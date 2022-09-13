@@ -48,7 +48,7 @@ stages:
           
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: 'lambdas/CreateMobileImage/*'
+              rootFolderOrFile: 'lambdas/CreateMobileImage/'
               includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateMobileImage.zip'
@@ -88,7 +88,7 @@ stages:
             regionName: 'eu-central-1'
             stackName: 'microservices'
             templateSource: 'file'
-            templateFile: 'microservices.yml'
+            templateFile: 'cfn/microservices.yml'
 
         - task: LambdaDeployFunction@1
           inputs:
