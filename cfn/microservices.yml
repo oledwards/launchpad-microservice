@@ -193,7 +193,8 @@ Resources:
                   - 's3:PutObject'
                 Resource: !Join
                             - ''
-                            - - GetAtt AppBucket.Arn
+                            - - 'arn:aws:s3::'
+                              - !Ref AppBucket
                               - '/*'
         - PolicyName: SQS-access
           PolicyDocument:
