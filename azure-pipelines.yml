@@ -32,28 +32,23 @@ stages:
           
           - script: |
               pip install cfn-lint
-              cfn-lint cfn/*.yml
+              cfn-lint *.yml
+            workingDirectory: cfn
             displayName: 'cfn-lint'
-          
-          - script: python -m pip install --upgrade pip setuptools wheel
-            displayName: 'Install tools'
-            workingDirectory: lambdas/
-            
-          - script: pip install -r requirements.txt
-            displayName: 'Install requirements'
-            workingDirectory: lambdas
+
           
           - script: |
-              pip install pytest pytest-azurepipelines
-              pip install pytest-cov
-              pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
-            displayName: 'pytest'
-            workingDirectory: /lambdas/
-            
+              python -m pip install flake8
+              flake8 CreateMobileImage/CreateMobileImage.py
+              flake8 CreateWebImage/CreateWebImage.py
+              flake8 CreateThumbnail/CreateThumbnail.py
+            workingDirectory: lambdas
+            displayName: 'pylint'
+            continueOnError: true 
           
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: 'lambdas/CreateMobileImage/*'
+              rootFolderOrFile: 'lambdas/CreateMobileImage/'
               includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateMobileImage.zip'
@@ -93,7 +88,7 @@ stages:
             regionName: 'eu-central-1'
             stackName: 'microservices'
             templateSource: 'file'
-            templateFile: 'microservices.yml'
+            templateFile: 'cfn/microservices.yml'
 
         - task: LambdaDeployFunction@1
           inputs:
