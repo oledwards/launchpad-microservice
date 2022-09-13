@@ -26,29 +26,30 @@ stages:
   jobs:
       - job:
         steps:
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.8'
+          # - task: UsePythonVersion@0
+          #   inputs:
+          #     versionSpec: '3.8'
           
-          - script: |
-              pip install cfn-lint
-              cfn-lint *.yml
-            workingDirectory: cfn
-            displayName: 'cfn-lint'
+          # - script: |
+          #     pip install cfn-lint
+          #     cfn-lint *.yml
+          #   workingDirectory: cfn
+          #   displayName: 'cfn-lint'
 
           
-          - script: |
-              python -m pip install flake8
-              flake8 CreateMobileImage/CreateMobileImage.py
-              flake8 CreateWebImage/CreateWebImage.py
-              flake8 CreateThumbnail/CreateThumbnail.py
-            workingDirectory: lambdas
-            displayName: 'pylint'
-            continueOnError: true 
+          # - script: |
+          #     python -m pip install flake8
+          #     flake8 CreateMobileImage/CreateMobileImage.py
+          #     flake8 CreateWebImage/CreateWebImage.py
+          #     flake8 CreateThumbnail/CreateThumbnail.py
+          #   workingDirectory: lambdas
+          #   displayName: 'pylint'
+          #   continueOnError: true 
           
           - task: ArchiveFiles@2
             inputs:
               rootFolderOrFile: lambdas/CreateMobileImage/
+              includeRootFolder: false
               archiveType: 'zip'
               archiveFile: 'CreateMobileImage.zip'
               replaceExistingArchive: true
