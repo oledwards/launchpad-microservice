@@ -37,6 +37,7 @@ stages:
               cfn-lint *.yml
             workingDirectory: cfn
             displayName: 'cfn-lint'
+            continueOnError: true 
 
           
           - script: |
