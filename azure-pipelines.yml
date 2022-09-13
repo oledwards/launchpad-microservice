@@ -50,7 +50,7 @@ stages:
             inputs:
               rootFolderOrFile: lambdas/CreateMobileImage/
               archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/CreateMobileImage.zip'
+              archiveFile: 'CreateMobileImage.zip'
               replaceExistingArchive: true
             displayName: 'Create Lambda Package - CreateMobileImage'
             
