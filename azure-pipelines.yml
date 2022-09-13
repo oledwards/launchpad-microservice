@@ -21,6 +21,8 @@ stages:
               stackName: 's3-lambdapackages'
               templateSource: 'file'
               templateFile: 'cfn/s3.yml'
+        
+
             
 - stage: Build
   jobs:
@@ -79,6 +81,7 @@ stages:
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages'
               globExpressions: '*.zip'
+              targetFolder: 'uploads/'
             displayName: 'Upload Lambda packages to S3'
 
 - stage: Deploy
