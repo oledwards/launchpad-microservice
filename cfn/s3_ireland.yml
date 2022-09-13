@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation to deploy s3 bucket for Lambda packages
+
+Parameters:
+  BucketName:
+    Description: Name of bucket to store Lambda packages
+    Type: String
+    Default: app-launchpad-replication
+
+
+Resources:
+# S3 bucket for Lambda packages
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled

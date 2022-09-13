@@ -40,6 +40,13 @@ Resources:
         TopicConfigurations:
           - Topic: !Ref SNSTopic
             Event: 's3:ObjectCreated:Put'
+            Filter:
+                S3Key:
+                  Rules:
+                    - Name: prefix 
+                      Value: uploads/
+      VersioningConfiguration:
+        Status: Enabled
 
 
 # SNS Topic triggered by S3 Notification
@@ -184,7 +191,7 @@ Resources:
                 Action: 
                   - 's3:GetObject'
                   - 's3:PutObject'
-                Resource: !GetAtt AppBucket.Arn
+                Resource: !GetAtt AppBucket.Arn/*
         - PolicyName: SQS-access
           PolicyDocument:
             Version: "2012-10-17"
@@ -210,7 +217,7 @@ Resources:
         S3Bucket: !Ref LambdaS3Bucket
         S3Key: CreateMobileImage.zip
       Runtime: python3.7
-      Timeout: 20
+      Timeout: 10
 
   CreateThumbnailFunction:
     Type: AWS::Lambda::Function
@@ -222,7 +229,7 @@ Resources:
         S3Bucket: !Ref LambdaS3Bucket
         S3Key: CreateThumbnail.zip
       Runtime: python3.7
-      Timeout: 20
+      Timeout: 10
 
   CreateWebImageFunction:
     Type: AWS::Lambda::Function
@@ -234,7 +241,7 @@ Resources:
         S3Bucket: !Ref LambdaS3Bucket
         S3Key: CreateWebImage.zip
       Runtime: python3.7
-      Timeout: 20
+      Timeout: 10
 
 
 # Event Source Mappings
@@ -243,15 +250,18 @@ Resources:
     Properties:
       EventSourceArn: !GetAtt ResizeQueue1.Arn
       FunctionName: !GetAtt CreateMobileImageFunction.Arn
+      BatchSize: 1
   
   EventSourceMapping2:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       EventSourceArn: !GetAtt ResizeQueue2.Arn
       FunctionName: !GetAtt CreateThumbnailFunction.Arn
+      BatchSize: 1
 
   EventSourceMapping3:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       EventSourceArn: !GetAtt ResizeQueue3.Arn
       FunctionName: !GetAtt CreateWebImageFunction.Arn
+      BatchSize: 1
