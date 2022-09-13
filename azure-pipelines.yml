@@ -26,24 +26,20 @@ stages:
   jobs:
       - job:
         steps:
-          # - task: CopyFiles@2
-          #   inputs:
-          #     contents: 'lambdas/CreateMobileImage/*'
-          #     targetFolder: $(Build.BinariesDirectory)/CreateMobileImage/
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.8'
           
-          # - task: CopyFiles@2
-          #   inputs:
-          #     contents: 'lambdas/CreateThumbnail/*'
-          #     targetFolder: $(Build.BinariesDirectory)/CreateThumbnail/
+          - task: PythonScript@0
+            inputs:
+              scriptSource: 'inline'
+              script: |
+                print('Hello world 1')
+                print('Hello world 2')
           
-          # - task: CopyFiles@2
-          #   inputs:
-          #     contents: 'lambdas/CreateWebImage/*'
-          #     targetFolder: $(Build.BinariesDirectory)/CreateWebImage/
-        
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: 'lambdas/CreateMobileImage/'
+              rootFolderOrFile: 'lambdas/CreateMobileImage/*'
               includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateMobileImage.zip'
