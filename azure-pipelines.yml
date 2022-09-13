@@ -102,7 +102,7 @@ stages:
             deploymentMode: 'codeonly'
             functionName: 'CreateMobileImage'
             codeLocation: 's3object'
-            s3Bucket: 'lambda-launchpad-packages22'
+            s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateMobileImage.zip'
           displayName: 'Deploy CreateMobileImage Lambda'
           
@@ -113,7 +113,7 @@ stages:
             deploymentMode: 'codeonly'
             functionName: 'CreateThumbnail'
             codeLocation: 's3object'
-            s3Bucket: 'lambda-launchpad-packages22'
+            s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateThumbnail.zip'
           displayName: 'Deploy CreateThumbnail Lambda'
           
@@ -124,6 +124,6 @@ stages:
             deploymentMode: 'codeonly'
             functionName: 'CreateWebImage'
             codeLocation: 's3object'
-            s3Bucket: 'lambda-launchpad-packages22'
+            s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateWebImage.zip'
           displayName: 'Deploy CreateWebImage Lambda'
