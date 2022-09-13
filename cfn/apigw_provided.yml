@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Module-A-APIGateway"
+
+Parameters:
+  APIName:
+    Type: String
+    Default: My-API
+
+  RoleName:
+    Type: String
+    Default: api-gateway-upload-to-s32  
+
+  PolicyName:
+    Type: String
+    Default: S3UploadPolicy
+
+  StageName:
+    Type: String
+    Default: v1  
+
+
+
+Resources:
+  UploadToS3AccessRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                      {
+                          "Sid": "",
+                          "Effect": "Allow",
+                          "Principal": {
+                              "Service": "apigateway.amazonaws.com"
+                          },
+                          "Action": "sts:AssumeRole"
+                      }
+                  ]
+              }
+      Description: This role provides access to api gateway to upload in S3
+      ManagedPolicyArns: 
+         - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+      RoleName: !Ref RoleName
+
+    
+  S3UploadPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      PolicyDocument: {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "",
+                    "Effect": "Allow",
+                    "Action": "s3:PutObject",
+                    "Resource": arn:aws:s3:::test7827/*  #Need bucket arn
+                }
+            ]
+        }
+      ManagedPolicyName: !Ref PolicyName
+      Roles: 
+       - !Ref UploadToS3AccessRole    
+
+  Api:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      BinaryMediaTypes: 
+       - '*/*'
+      Name: !Ref APIName
+      Description: API To Resize Image
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  
+  folderResource:
+    Type: AWS::ApiGateway::Resource
+    Properties: 
+      ParentId: !GetAtt 
+        - Api
+        - RootResourceId
+      PathPart: '{folder}'
+      RestApiId: !Ref Api
+
+  ObjectResource:
+    Type: AWS::ApiGateway::Resource
+    Properties: 
+      ParentId: !Ref folderResource
+      PathPart: '{object}'
+      RestApiId: !Ref Api
+  
+  APIPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE 
+      HttpMethod: POST
+      RequestParameters:
+        method.request.path.folder: true
+        method.request.path.object: true
+      Integration: 
+        Credentials: !GetAtt UploadToS3AccessRole.Arn
+        IntegrationHttpMethod: PUT
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters: 
+          integration.request.path.bucket: method.request.path.folder
+          integration.request.path.key: method.request.path.object
+        Type: AWS
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:s3:path/{bucket}/{key}'
+        IntegrationResponses:
+          - StatusCode: 200
+      MethodResponses:
+        - ResponseModels:
+           application/json: Empty
+          StatusCode: 200    
+      ResourceId: !Ref ObjectResource
+      RestApiId: !Ref Api
+  
+  Deployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: APIPostMethod
+    Properties:
+      RestApiId: !Ref Api
+      StageName: !Ref StageName
+    
+    
+      

@@ -209,7 +209,7 @@ Resources:
       Code:
         S3Bucket: !Ref LambdaS3Bucket
         S3Key: CreateMobileImage.zip
-      Runtime: python3.9
+      Runtime: python3.7
       Timeout: 20
 
   CreateThumbnailFunction:
@@ -221,7 +221,7 @@ Resources:
       Code:
         S3Bucket: !Ref LambdaS3Bucket
         S3Key: CreateThumbnail.zip
-      Runtime: python3.9
+      Runtime: python3.7
       Timeout: 20
 
   CreateWebImageFunction:
@@ -233,7 +233,7 @@ Resources:
       Code:
         S3Bucket: !Ref LambdaS3Bucket
         S3Key: CreateWebImage.zip
-      Runtime: python3.9
+      Runtime: python3.7
       Timeout: 20
 
 
