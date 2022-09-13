@@ -191,11 +191,12 @@ Resources:
                 Action: 
                   - 's3:GetObject'
                   - 's3:PutObject'
-                Resource: !Join
-                            - ''
-                            - - 'arn:aws:s3::'
-                              - !Ref AppBucket
-                              - '/*'
+                Resource: 
+                    !Join
+                      - ''
+                      - - 'arn:aws:s3::'
+                        - !Ref AppBucket
+                        - '/*'
         - PolicyName: SQS-access
           PolicyDocument:
             Version: "2012-10-17"
