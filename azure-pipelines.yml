@@ -80,7 +80,7 @@ stages:
               bucketName: 'lambda-launchpad-packages'
               sourceFolder: $(Build.ArtifactStagingDirectory)
               globExpressions: '*.zip'
-            displayName: 'Upload zip files to S3'
+            displayName: 'Upload Lambda packages to S3'
 
 - stage: Deploy
   jobs:
