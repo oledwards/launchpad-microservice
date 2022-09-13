@@ -81,7 +81,6 @@ stages:
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages'
               globExpressions: '*.zip'
-              targetFolder: 'uploads/'
             displayName: 'Upload Lambda packages to S3'
 
 - stage: Deploy
@@ -96,6 +95,15 @@ stages:
             templateSource: 'file'
             templateFile: 'cfn/microservices.yml'
           displayName: 'Deploy Microservices'
+        
+        - task: S3Upload@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            bucketName: 'launchpad-app-bucket'
+            globExpressions: 'dummyfile.txt'
+            targetFolder: 'uploads'
+          displayName: 'Create Uploads folder in S3'
 
         - task: LambdaDeployFunction@1
           inputs:
