@@ -44,6 +44,7 @@ stages:
               flake8 CreateThumbnail/CreateThumbnail.py
             workingDirectory: lambdas
             displayName: 'pylint'
+            continueOnError: true 
           
           - task: ArchiveFiles@2
             inputs:
