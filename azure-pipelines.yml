@@ -39,7 +39,7 @@ stages:
           
           - script: |
               python -m pip install flake8
-              flake8 /**/*.yaml
+              flake8 /**/*.py
             workingDirectory: lambdas
             displayName: 'pylint'
           
