@@ -26,30 +26,29 @@ stages:
   jobs:
       - job:
         steps:
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.8'
+          # - task: UsePythonVersion@0
+          #   inputs:
+          #     versionSpec: '3.8'
           
-          - script: |
-              pip install cfn-lint
-              cfn-lint *.yml
-            workingDirectory: cfn
-            displayName: 'cfn-lint'
+          # - script: |
+          #     pip install cfn-lint
+          #     cfn-lint *.yml
+          #   workingDirectory: cfn
+          #   displayName: 'cfn-lint'
 
           
-          - script: |
-              python -m pip install flake8
-              flake8 CreateMobileImage/CreateMobileImage.py
-              flake8 CreateWebImage/CreateWebImage.py
-              flake8 CreateThumbnail/CreateThumbnail.py
-            workingDirectory: lambdas
-            displayName: 'pylint'
-            continueOnError: true 
+          # - script: |
+          #     python -m pip install flake8
+          #     flake8 CreateMobileImage/CreateMobileImage.py
+          #     flake8 CreateWebImage/CreateWebImage.py
+          #     flake8 CreateThumbnail/CreateThumbnail.py
+          #   workingDirectory: lambdas
+          #   displayName: 'pylint'
+          #   continueOnError: true 
           
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: lambdas/CreateMobileImage/*
-              includeRootFolder: true
+              rootFolderOrFile: lambdas/CreateMobileImage/
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateMobileImage.zip'
               replaceExistingArchive: true
@@ -58,7 +57,6 @@ stages:
           - task: ArchiveFiles@2
             inputs:
               rootFolderOrFile: lambdas/CreateThumbnail/
-              includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateThumbnail.zip'
               replaceExistingArchive: true
@@ -67,7 +65,6 @@ stages:
           - task: ArchiveFiles@2
             inputs:
               rootFolderOrFile: lambdas/CreateWebImage/
-              includeRootFolder: true
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateWebImage.zip'
               replaceExistingArchive: true
