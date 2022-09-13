@@ -32,7 +32,7 @@ stages:
           
           - script: |
               pip install cfn-lint
-              cfn-lint '*.yml'
+              cfn-lint cfn/*.yml
             displayName: 'cfn-lint'
           
           - script: python -m pip install --upgrade pip setuptools wheel

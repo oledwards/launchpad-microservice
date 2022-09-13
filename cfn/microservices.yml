@@ -2,13 +2,13 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: CloudFormation to deploy microservicess
 
 Parameters:
-  EnvironmentName:
-    Description: The environment the template is being run in. Used for naming resources
-    Type: String
-    AllowedValues:
-      - nonprod
-      - preprod
-      - prod
+  # EnvironmentName:
+  #   Description: The environment the template is being run in. Used for naming resources
+  #   Type: String
+  #   AllowedValues:
+  #     - nonprod
+  #     - preprod
+  #     - prod
     Default: nonprod
   SourceBucketName:
     Description: S3 bucket for file upload
