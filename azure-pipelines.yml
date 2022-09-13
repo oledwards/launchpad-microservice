@@ -32,22 +32,16 @@ stages:
           
           - script: |
               pip install cfn-lint
-              cfn-lint cfn/*.yml
+              cfn-lint *.yml
+            workingDirectory: lambdas
             displayName: 'cfn-lint'
-          
-          - script: python -m pip install --upgrade pip setuptools wheel
-            displayName: 'Install tools'
-            workingDirectory: lambdas
-            
-          - script: pip install -r requirements.txt
-            displayName: 'Install requirements'
-            workingDirectory: lambdas
+
           
           - script: |
               python -m pip install flake8
-              flake8 .
-            displayName: 'Run lint tests'
+              flake8 /**/*.yaml
             workingDirectory: lambdas
+            displayName: 'pylint'
           
           - task: ArchiveFiles@2
             inputs:
