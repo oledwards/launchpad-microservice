@@ -58,6 +58,7 @@ stages:
           - task: ArchiveFiles@2
             inputs:
               rootFolderOrFile: lambdas/CreateThumbnail/
+              includeRootFolder: false
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateThumbnail.zip'
               replaceExistingArchive: true
@@ -66,6 +67,7 @@ stages:
           - task: ArchiveFiles@2
             inputs:
               rootFolderOrFile: lambdas/CreateWebImage/
+              includeRootFolder: false
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/CreateWebImage.zip'
               replaceExistingArchive: true
