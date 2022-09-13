@@ -10,14 +10,10 @@ Parameters:
   #     - preprod
   #     - prod
   #   Default: nonprod
-  SourceBucketName:
+  S3BucketName:
     Description: S3 bucket for file upload
     Type: String
     Default: mysourcebuck234
-  DestinationBucketName:
-    Description: S3 bucket for resized images
-    Type: String
-    Default: mydestbuck4567
   LambdaS3Bucket:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /s3/bucketname
@@ -25,12 +21,12 @@ Parameters:
 
 Resources:
 
-# Source S3 bucket for file upload logs
-  SourceBucket:
+# S3 bucket for file upload and destination file for resized images
+  AppBucket:
     Type: AWS::S3::Bucket
     DependsOn: SNSTopicPolicy
     Properties:
-      BucketName: !Ref SourceBucketName
+      BucketName: !Ref S3BucketName
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -44,21 +40,6 @@ Resources:
         TopicConfigurations:
           - Topic: !Ref SNSTopic
             Event: 's3:ObjectCreated:Put'
-
-# Destination S3 bucket for file upload logs
-  DestinationBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref DestinationBucketName
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
 
 
 # SNS Topic triggered by S3 Notification
@@ -195,22 +176,15 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: S3-get-access
+        - PolicyName: S3-access
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action: 
                   - 's3:GetObject'
-                Resource: !GetAtt SourceBucket.Arn
-        - PolicyName: S3-put-access
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action: 
                   - 's3:PutObject'
-                Resource: !GetAtt DestinationBucket.Arn
+                Resource: !GetAtt AppBucket.Arn
         - PolicyName: SQS-access
           PolicyDocument:
             Version: "2012-10-17"
