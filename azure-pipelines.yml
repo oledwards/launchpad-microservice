@@ -60,7 +60,7 @@ stages:
               rootFolderOrFile: lambdas/CreateThumbnail/
               includeRootFolder: false
               archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/CreateThumbnail.zip'
+              archiveFile: 'CreateThumbnail.zip'
               replaceExistingArchive: true
             displayName: 'Create Lambda Package - CreateThumbnail'
 
@@ -69,7 +69,7 @@ stages:
               rootFolderOrFile: lambdas/CreateWebImage/
               includeRootFolder: false
               archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/CreateWebImage.zip'
+              archiveFile: 'CreateWebImage.zip'
               replaceExistingArchive: true
             displayName: 'Create Lambda Package - CreateWebImage'
             
@@ -78,7 +78,7 @@ stages:
               awsCredentials: 'AWS-S3-Connection'
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages'
-              sourceFolder: $(Build.ArtifactStagingDirectory)
+              # sourceFolder: $(Build.ArtifactStagingDirectory)
               globExpressions: '*.zip'
             displayName: 'Upload Lambda packages to S3'
 
