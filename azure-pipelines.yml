@@ -33,7 +33,7 @@ stages:
           - script: |
               pip install cfn-lint
               cfn-lint *.yml
-            workingDirectory: lambdas
+            workingDirectory: cfn
             displayName: 'cfn-lint'
 
           
