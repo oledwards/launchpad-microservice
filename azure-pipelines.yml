@@ -32,7 +32,7 @@ stages:
           
           - script: python -m pip install --upgrade pip setuptools wheel
             displayName: 'Install tools'
-            workingDirectory: lambdas
+            workingDirectory: /lambdas/
             
           - script: pip install -r requirements.txt
             displayName: 'Install requirements'
@@ -43,7 +43,7 @@ stages:
               pip install pytest-cov
               pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
             displayName: 'pytest'
-            workingDirectory: lambdas
+            workingDirectory: /lambdas/
           
           - task: ArchiveFiles@2
             inputs:
