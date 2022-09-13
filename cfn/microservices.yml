@@ -9,7 +9,7 @@ Parameters:
   #     - nonprod
   #     - preprod
   #     - prod
-    Default: nonprod
+  #   Default: nonprod
   SourceBucketName:
     Description: S3 bucket for file upload
     Type: String
