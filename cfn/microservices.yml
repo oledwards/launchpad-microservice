@@ -13,7 +13,7 @@ Parameters:
   S3BucketName:
     Description: S3 bucket for file upload
     Type: String
-    Default: mysourcebuck234
+    Default: launchpad-app-bucket
   LambdaS3Bucket:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /s3/bucketname
