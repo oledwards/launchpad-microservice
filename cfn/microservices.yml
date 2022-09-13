@@ -191,7 +191,7 @@ Resources:
                 Action: 
                   - 's3:GetObject'
                   - 's3:PutObject'
-                Resource: !GetAtt AppBucket.Arn/*
+                Resource: !Join [ "/*", [ !GetAtt AppBucket.Arn ]]
         - PolicyName: SQS-access
           PolicyDocument:
             Version: "2012-10-17"
