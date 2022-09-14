@@ -11,6 +11,8 @@ pool:
 
 stages:
 - stage: S3Bucket
+variables:
+  EnvironmentName: nonprod
   jobs:
       - job:
         steps:
