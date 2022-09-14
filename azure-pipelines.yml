@@ -16,7 +16,7 @@ stages:
         steps:
           - task: CloudFormationCreateOrUpdateStack@1
             inputs:
-              awsCredentials: 'AWS-S3-Connection'
+              awsCredentials: 'AWS-Connection-Nonprod'
               regionName: 'eu-central-1'
               stackName: 's3-lambdapackages'
               templateSource: 'file'
@@ -78,7 +78,7 @@ stages:
             
           - task: S3Upload@1
             inputs:
-              awsCredentials: 'AWS-S3-Connection'
+              awsCredentials: 'AWS-Connection-Nonprod'
               regionName: 'eu-central-1'
               bucketName: 'lambda-launchpad-packages'
               globExpressions: '*.zip'
@@ -90,7 +90,7 @@ stages:
         steps:
         - task: CloudFormationCreateOrUpdateStack@1
           inputs:
-            awsCredentials: 'AWS-S3-Connection'
+            awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
             stackName: 'microservices'
             templateSource: 'file'
@@ -99,7 +99,7 @@ stages:
         
         - task: S3Upload@1
           inputs:
-            awsCredentials: 'AWS-S3-Connection'
+            awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
             bucketName: 'launchpad-app-bucket'
             globExpressions: 'dummyfile.txt'
@@ -108,7 +108,7 @@ stages:
 
         - task: LambdaDeployFunction@1
           inputs:
-            awsCredentials: 'AWS-S3-Connection'
+            awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
             functionName: 'CreateMobileImage'
@@ -119,7 +119,7 @@ stages:
           
         - task: LambdaDeployFunction@1
           inputs:
-            awsCredentials: 'AWS-S3-Connection'
+            awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
             functionName: 'CreateThumbnail'
@@ -130,7 +130,7 @@ stages:
           
         - task: LambdaDeployFunction@1
           inputs:
-            awsCredentials: 'AWS-S3-Connection'
+            awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
             functionName: 'CreateWebImage'
