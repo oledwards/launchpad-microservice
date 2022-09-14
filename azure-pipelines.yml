@@ -84,7 +84,7 @@ stages:
               globExpressions: '*.zip'
             displayName: 'Upload Lambda packages to S3'
 
-- stage: Deploy to non-production
+- stage: DeployNonProduction
   jobs:
       - job:
         steps:
@@ -139,7 +139,7 @@ stages:
             s3ObjectKey: 'CreateWebImage.zip'
           displayName: 'Deploy CreateWebImage Lambda'
   
-- stage: Deploy to production
+- stage: DeployProduction
   jobs:
       - job:
         steps:
