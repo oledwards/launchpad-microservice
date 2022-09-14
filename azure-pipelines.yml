@@ -84,7 +84,62 @@ stages:
               globExpressions: '*.zip'
             displayName: 'Upload Lambda packages to S3'
 
-- stage: Deploy
+- stage: Deploy to non-production
+  jobs:
+      - job:
+        steps:
+        - task: CloudFormationCreateOrUpdateStack@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            stackName: 'microservices'
+            templateSource: 'file'
+            templateFile: 'cfn/microservices.yml'
+          displayName: 'Deploy Microservices'
+        
+        - task: S3Upload@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            bucketName: 'launchpad-app-bucket'
+            globExpressions: 'dummyfile.txt'
+            targetFolder: 'uploads'
+          displayName: 'Create Uploads folder in S3'
+
+        - task: LambdaDeployFunction@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            deploymentMode: 'codeonly'
+            functionName: 'CreateMobileImage'
+            codeLocation: 's3object'
+            s3Bucket: 'lambda-launchpad-packages'
+            s3ObjectKey: 'CreateMobileImage.zip'
+          displayName: 'Deploy CreateMobileImage Lambda'
+          
+        - task: LambdaDeployFunction@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            deploymentMode: 'codeonly'
+            functionName: 'CreateThumbnail'
+            codeLocation: 's3object'
+            s3Bucket: 'lambda-launchpad-packages'
+            s3ObjectKey: 'CreateThumbnail.zip'
+          displayName: 'Deploy CreateThumbnail Lambda'
+          
+        - task: LambdaDeployFunction@1
+          inputs:
+            awsCredentials: 'AWS-S3-Connection'
+            regionName: 'eu-central-1'
+            deploymentMode: 'codeonly'
+            functionName: 'CreateWebImage'
+            codeLocation: 's3object'
+            s3Bucket: 'lambda-launchpad-packages'
+            s3ObjectKey: 'CreateWebImage.zip'
+          displayName: 'Deploy CreateWebImage Lambda'
+  
+- stage: Deploy to production
   jobs:
       - job:
         steps:
