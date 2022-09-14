@@ -154,7 +154,7 @@ stages:
          runOnce:
            deploy:
              steps:
-               - bash: echo "approval stage required"
+               - bash: echo "approval accepted!"
   
 - stage: DeployProduction
   variables:
