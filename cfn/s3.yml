@@ -2,13 +2,6 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: CloudFormation to deploy s3 bucket for Lambda packages
 
 Parameters:
-  EnvironmentName:
-    Description: The environment the template is being run in. Used for naming resources
-    Type: String
-    AllowedValues:
-      - nonprod
-      - preprod
-      - prod
   BucketName:
     Description: Name of bucket to store Lambda packages
     Type: String
