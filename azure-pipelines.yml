@@ -144,6 +144,17 @@ stages:
             s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateWebImage.zip'
           displayName: 'Deploy CreateWebImage Lambda'
+
+- stage: Approval
+  jobs:
+      - deployment: 
+        displayName: Approval for Production Deployment
+        environment: approval_prod
+        strategy:
+         runOnce:
+           deploy:
+             steps:
+               - bash: echo "approval stage required"
   
 - stage: DeployProduction
   variables:
