@@ -23,6 +23,10 @@ stages:
               stackName: 's3-lambdapackages'
               templateSource: 'file'
               templateFile: 'cfn/s3.yml'
+              templateParametersSource: "inline"
+              templateParameters: |
+                - ParameterKey: EnvironmentName
+                  ParameterValue: ${{variables.email_recipients}}
         
 
             
