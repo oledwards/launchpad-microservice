@@ -149,7 +149,7 @@ stages:
   jobs:
       - deployment: 
         displayName: Approval for Production Deployment
-        environment: approval_prod
+        environment: approval-prod
         strategy:
          runOnce:
            deploy:
