@@ -158,6 +158,10 @@ stages:
             stackName: 'microservices-${{variables.EnvironmentName}}'
             templateSource: 'file'
             templateFile: 'cfn/microservices.yml'
+            templateParametersSource: "inline"
+            templateParameters: |
+                - ParameterKey: EnvironmentName
+                  ParameterValue: ${{variables.EnvironmentName}}
           displayName: 'Deploy Microservices'
         
         - task: S3Upload@1
