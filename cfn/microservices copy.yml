@@ -1,0 +1,419 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation to deploy microservicess
+
+Parameters:
+  # EnvironmentName:
+  #   Description: The environment the template is being run in. Used for naming resources
+  #   Type: String
+  #   AllowedValues:
+  #     - nonprod
+  #     - preprod
+  #     - prod
+  #   Default: nonprod
+  S3BucketName:
+    Description: S3 bucket for file upload
+    Type: String
+    Default: launchpad-app-bucket
+  ReplicationBucketName:
+    Description: S3 bucket for cross region replication
+    Type: String
+    Default: launchpad-replica-bucket
+  LambdaS3Bucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /s3/bucketname
+    Description: S3 Bucket Name where Lambda Packages are stored
+  RepRegion:
+    Type: String
+    AllowedValues:
+      - us-east-1
+      - us-east-2
+      - us-west-1
+      - us-west-2
+      - ca-central-1
+      - ap-south-1
+      - ap-northeast-2
+      - ap-southeast-1
+      - ap-southeast-2
+      - ap-northeast-1
+      - eu-central-1
+      - eu-west-1
+      - eu-west-2
+      - sa-east-1
+    Default: eu-west-1
+
+
+Resources:
+
+# S3 bucket for file upload and destination file for resized images
+  AppBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: 
+      - SNSTopicPolicy
+      - TriggerLambda
+    Properties:
+      BucketName: !Ref S3BucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Topic: !Ref SNSTopic
+            Event: 's3:ObjectCreated:Put'
+            Filter:
+                S3Key:
+                  Rules:
+                    - Name: prefix 
+                      Value: uploads/
+      ReplicationConfiguration:
+        Role: !GetAtt S3Role.Arn
+        Rules:
+          -
+            Destination:
+              Bucket:
+                !Join
+                  - ""
+                  -
+                    - "arn:aws:s3:::"
+                    - !Ref ReplicationBucketName
+              StorageClass: STANDARD
+            Id: MyRule1
+            Prefix: ""
+            Status: Enabled
+      VersioningConfiguration:
+        Status: Enabled
+
+
+# SNS Topic triggered by S3 Notification
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: microservice-topic
+      Subscription:
+      - Endpoint: !GetAtt ResizeQueue1.Arn
+        Protocol: "sqs"
+      - Endpoint: !GetAtt ResizeQueue2.Arn
+        Protocol: "sqs"
+      - Endpoint: !GetAtt ResizeQueue3.Arn
+        Protocol: "sqs"
+  SNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: 
+        - !Ref SNSTopic
+      PolicyDocument:
+        Statement:
+          - Sid: AllowS3
+            Effect: Allow
+            Principal:
+              Service:
+                - s3.amazonaws.com
+            Action: 'sns:Publish'
+            Resource:
+              - !Ref SNSTopic
+# SQS Queues
+  ResizeQueue1: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-1 
+  
+  ResizeQueue2: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-2
+
+  ResizeQueue3: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: photo-resize-3 
+
+# SQS Queue Policies
+  SQSPolicy1: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref ResizeQueue1
+      PolicyDocument: 
+        Statement: 
+          - Effect: "Allow"
+            Action: 
+              - "SQS:*" 
+            Resource: !GetAtt ResizeQueue1.Arn
+            Principal:  
+              AWS: 
+                - !Sub ${AWS::AccountId}
+          - Effect: "Allow"
+            Action: 
+              - "SQS:SendMessage" 
+            Resource: !GetAtt ResizeQueue1.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref SNSTopic
+            Principal:  
+              AWS: "*"
+
+  SQSPolicy2: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref ResizeQueue2
+      PolicyDocument: 
+        Statement: 
+          - Effect: "Allow"
+            Action: 
+              - "SQS:*" 
+            Resource: !GetAtt ResizeQueue2.Arn
+            Principal:  
+              AWS: 
+                - !Sub ${AWS::AccountId}
+          - Effect: "Allow"
+            Action: 
+              - "SQS:SendMessage" 
+            Resource: !GetAtt ResizeQueue2.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref SNSTopic
+            Principal:  
+              AWS: "*"
+  
+  SQSPolicy3: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref ResizeQueue3
+      PolicyDocument: 
+        Statement: 
+          - Effect: "Allow"
+            Action: 
+              - "SQS:*" 
+            Resource: !GetAtt ResizeQueue3.Arn
+            Principal:  
+              AWS: 
+                - !Sub ${AWS::AccountId}
+          - Effect: "Allow"
+            Action: 
+              - "SQS:SendMessage" 
+            Resource: !GetAtt ResizeQueue3.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref SNSTopic
+            Principal:  
+              AWS: "*"
+            
+
+# IAM role for Lambda
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                Resource: 
+                  - !Join
+                    - ''
+                    - - 'arn:aws:s3:::'
+                      - !Ref AppBucket
+                      - /*
+        - PolicyName: SQS-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'sqs:ReceiveMessage'
+                  - 'sqs:DeleteMessage'
+                  - 'sqs:GetQueueAttributes'
+                Resource: 
+                  - !GetAtt ResizeQueue1.Arn
+                  - !GetAtt ResizeQueue2.Arn
+                  - !GetAtt ResizeQueue3.Arn
+
+# Lambda Functions
+  CreateMobileImageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: CreateMobileImage
+      Handler: CreateMobileImage.handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: CreateMobileImage.zip
+      Runtime: python3.7
+      Timeout: 10
+
+  CreateThumbnailFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: CreateThumbnail
+      Handler: CreateThumbnail.handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: CreateThumbnail.zip
+      Runtime: python3.7
+      Timeout: 10
+
+  CreateWebImageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: CreateWebImage
+      Handler: CreateWebImage.handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: CreateWebImage.zip
+      Runtime: python3.7
+      Timeout: 10
+
+
+# Event Source Mappings
+  EventSourceMapping1:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt ResizeQueue1.Arn
+      FunctionName: !GetAtt CreateMobileImageFunction.Arn
+      BatchSize: 1
+  
+  EventSourceMapping2:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt ResizeQueue2.Arn
+      FunctionName: !GetAtt CreateThumbnailFunction.Arn
+      BatchSize: 1
+
+  EventSourceMapping3:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt ResizeQueue3.Arn
+      FunctionName: !GetAtt CreateWebImageFunction.Arn
+      BatchSize: 1
+
+
+# S3 Cross Region Replication
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          -
+            Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: "2012-10-17"
+      Path: /
+      Policies:
+        -
+          PolicyDocument:
+            Statement:
+              -
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Effect: Allow
+                Resource: "arn:aws:logs:*:*:*"
+              -
+                Action:
+                  - "s3:*"
+                Effect: Allow
+                Resource: "*"
+            Version: "2012-10-17"
+          PolicyName: root
+
+  ReplicationBucket:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Code:
+        ZipFile:
+          !Sub |
+            var aws = require('aws-sdk');
+            var response = require('cfn-response');
+            exports.handler = function(event, context, callback){
+                var s3 = new aws.S3({region: event.ResourceProperties.DestBucketRegion});
+                if (event.RequestType == 'Create' || event.RequestType == 'Update'){
+                    var bucketParams = {
+                        Bucket: event.ResourceProperties.DestBucketName,
+                    };
+                    s3.createBucket(bucketParams, function(err, data) {
+                        if (err){
+                            console.log(err, err.stack)
+                            response.send(event, context, response.FAILED, err)
+                        }
+                        else {
+                            console.log(data)
+                            var versioningParams = {
+                                Bucket: event.ResourceProperties.DestBucketName,
+                                VersioningConfiguration: {
+                                    Status: 'Enabled'
+                                }
+                            };
+                            s3.putBucketVersioning(versioningParams, function(err, data) {
+                                if (err) {
+                                    console.log(err, err.stack);
+                                }
+                                else {
+                                    console.log(data)
+                                    response.send(event, context, response.SUCCESS, {}, event.destBucketName);
+                                    callback(null,'Bucket created!');
+                                }
+                            });
+                        }
+                    });
+                }
+                else if (event.RequestType == 'Delete'){
+                    console.log('Please delete the ' + event.PhysicalResourceId + ' bucket.')
+                    response.send(event, context, response.SUCCESS, {}, event.PhysicalResourceId);
+                    callback(null);
+                }
+            };
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs14.x
+      Timeout: 30
+  TriggerLambda:
+    Type: Custom::LambdaTrig
+    Properties:
+      ServiceToken: !GetAtt ReplicationBucket.Arn
+      DestBucketName: !Ref ReplicationBucketName
+      DestBucketRegion: !Ref RepRegion
+  S3Role:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          -
+            Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - s3.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        -  arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Path: /
+    Type: "AWS::IAM::Role"

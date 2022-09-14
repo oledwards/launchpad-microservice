@@ -9,6 +9,7 @@ Parameters:
       - nonprod
       - preprod
       - prod
+    Default: nonprod
   BucketName:
     Description: Name of bucket to store Lambda packages
     Type: String
@@ -20,7 +21,7 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName:
+      BucketName: 
             !Join
               - ""
               -
@@ -41,7 +42,12 @@ Resources:
   S3Parameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /s3/bucketname
+      Name:
+        !Join
+          - ""
+          -
+            - "s3/bucketname/"
+            - !Ref EnvironmentName
       Type: String
       Value: !Ref S3Bucket
       Description: S3 bucket where Lambda packages are stored
