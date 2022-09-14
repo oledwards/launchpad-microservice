@@ -32,5 +32,3 @@ Resources:
       Type: String
       Value: !Ref S3Bucket
       Description: S3 bucket where Lambda packages are stored
-      Tags:
-        Environment: !Sub ${EnvironmentName}
