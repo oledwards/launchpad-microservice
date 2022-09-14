@@ -168,7 +168,7 @@ stages:
           inputs:
             awsCredentials: 'AWS-Connection-Prod'
             regionName: 'eu-central-1'
-            bucketName: 'launchpad-app-bucket--${{variables.EnvironmentName}}'
+            bucketName: 'launchpad-app-bucket-${{variables.EnvironmentName}}'
             globExpressions: 'dummyfile.txt'
             targetFolder: 'uploads'
           displayName: 'Create Uploads folder in S3'
