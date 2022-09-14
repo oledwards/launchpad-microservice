@@ -26,7 +26,7 @@ stages:
               templateParametersSource: "inline"
               templateParameters: |
                 - ParameterKey: EnvironmentName
-                  ParameterValue: ${{variables.email_recipients}}
+                  ParameterValue: ${{variables.EnvironmentName}}
         
 
             
