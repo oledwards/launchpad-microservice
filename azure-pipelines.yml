@@ -178,7 +178,7 @@ stages:
             awsCredentials: 'AWS-Connection-Prod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'CreateMobileImage--${{variables.EnvironmentName}}'
+            functionName: 'CreateMobileImage-${{variables.EnvironmentName}}'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateMobileImage.zip'
