@@ -11,8 +11,6 @@ pool:
 
 stages:
 - stage: S3Bucket
-  variables:
-    EnvironmentName: nonprod
   jobs:
       - job:
         steps:
@@ -23,10 +21,6 @@ stages:
               stackName: 's3-lambdapackages'
               templateSource: 'file'
               templateFile: 'cfn/s3.yml'
-              templateParametersSource: "inline"
-              templateParameters: |
-                - ParameterKey: EnvironmentName
-                  ParameterValue: ${{variables.EnvironmentName}}
         
 
             
@@ -91,6 +85,8 @@ stages:
             displayName: 'Upload Lambda packages to S3'
 
 - stage: DeployNonProduction
+  variables:
+    EnvironmentName: nonprod
   jobs:
       - job:
         steps:
@@ -98,16 +94,20 @@ stages:
           inputs:
             awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
-            stackName: 'microservices'
+            stackName: 'microservices-${{variables.EnvironmentName}}'
             templateSource: 'file'
             templateFile: 'cfn/microservices.yml'
+            templateParametersSource: "inline"
+            templateParameters: |
+                - ParameterKey: EnvironmentName
+                  ParameterValue: ${{variables.EnvironmentName}}
           displayName: 'Deploy Microservices'
         
         - task: S3Upload@1
           inputs:
             awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
-            bucketName: 'launchpad-app-bucket'
+            bucketName: 'launchpad-app-bucket-${{variables.EnvironmentName}}'
             globExpressions: 'dummyfile.txt'
             targetFolder: 'uploads'
           displayName: 'Create Uploads folder in S3'
@@ -117,7 +117,7 @@ stages:
             awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'CreateMobileImage'
+            functionName: 'CreateMobileImage-${{variables.EnvironmentName}}'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateMobileImage.zip'
@@ -128,7 +128,7 @@ stages:
             awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'CreateThumbnail'
+            functionName: 'CreateThumbnail-${{variables.EnvironmentName}}'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateThumbnail.zip'
@@ -139,13 +139,15 @@ stages:
             awsCredentials: 'AWS-Connection-Nonprod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'CreateWebImage'
+            functionName: 'CreateWebImage-${{variables.EnvironmentName}}'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateWebImage.zip'
           displayName: 'Deploy CreateWebImage Lambda'
   
 - stage: DeployProduction
+  variables:
+    EnvironmentName: prod
   jobs:
       - job:
         steps:
@@ -153,7 +155,7 @@ stages:
           inputs:
             awsCredentials: 'AWS-Connection-Prod'
             regionName: 'eu-central-1'
-            stackName: 'microservices'
+            stackName: 'microservices-${{variables.EnvironmentName}}'
             templateSource: 'file'
             templateFile: 'cfn/microservices.yml'
           displayName: 'Deploy Microservices'
@@ -162,7 +164,7 @@ stages:
           inputs:
             awsCredentials: 'AWS-Connection-Prod'
             regionName: 'eu-central-1'
-            bucketName: 'launchpad-app-bucket'
+            bucketName: 'launchpad-app-bucket--${{variables.EnvironmentName}}'
             globExpressions: 'dummyfile.txt'
             targetFolder: 'uploads'
           displayName: 'Create Uploads folder in S3'
@@ -172,7 +174,7 @@ stages:
             awsCredentials: 'AWS-Connection-Prod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'CreateMobileImage'
+            functionName: 'CreateMobileImage--${{variables.EnvironmentName}}'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateMobileImage.zip'
@@ -183,7 +185,7 @@ stages:
             awsCredentials: 'AWS-Connection-Prod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'CreateThumbnail'
+            functionName: 'CreateThumbnail-${{variables.EnvironmentName}}'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateThumbnail.zip'
@@ -194,7 +196,7 @@ stages:
             awsCredentials: 'AWS-Connection-Prod'
             regionName: 'eu-central-1'
             deploymentMode: 'codeonly'
-            functionName: 'CreateWebImage'
+            functionName: 'CreateWebImage-${{variables.EnvironmentName}}'
             codeLocation: 's3object'
             s3Bucket: 'lambda-launchpad-packages'
             s3ObjectKey: 'CreateWebImage.zip'
